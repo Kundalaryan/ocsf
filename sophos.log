@@ -1,0 +1,19 @@
+Apr 15 10:00:01 sophosfw SFOS 19.5.1 MR-1:  id=1101 log_type=Firewall log_component=IPS log_subtype=Signature fw_rule_id=1001 src_ip=192.168.10.5 src_port=54321 src_zone=LAN src_country=India dst_ip=104.26.10.123 dst_port=443 dst_zone=WAN dst_country=United States con_direction=outbound protocol=TCP user_name=john.doe malware=Trojan.GenericKD.45093218 file_name=exploit.exe file_size=123456 file_path=/downloads/exploit.exe
+
+Apr 15 10:01:02 sophosfw SFOS 19.5.1 MR-1: id=1102 log_type=WebFilter log_component=HTTP log_subtype=Access fw_rule_id=1002 src_ip=192.168.10.6 src_port=56789 src_zone=LAN dst_ip=142.250.190.14 dst_port=80 dst_zone=WAN protocol=TCP url=http://example.com dstdomain=example.com user_name=alice user_group=Marketing sent_bytes=2048 recv_bytes=8192
+
+Apr 15 10:02:03 sophosfw SFOS 19.5.1 MR-1: id=1103 log_type=ApplicationControl log_component=APP log_subtype=PolicyMatch fw_rule_id=1003 src_ip=192.168.10.7 src_port=45678 dst_ip=151.101.65.121 dst_port=443 app_name=Zoom user_name=bob user_group=HR
+
+Apr 15 10:03:04 sophosfw SFOS 19.5.1 MR-1: id=1104 log_type=Antivirus log_component=AV log_subtype=Malware fw_rule_id=1004 src_ip=192.168.10.8 src_port=33445 dst_ip=203.0.113.22 dst_port=21 protocol=FTP ftpcommand=RETR file_name=virusfile.exe file_size=654321 file_path=/infected/virusfile.exe user_name=carol
+
+Apr 15 10:04:05 sophosfw SFOS 19.5.1 MR-1: id=1105 log_type=Firewall log_component=NAT log_subtype=DNAT fw_rule_id=1005 src_ip=203.0.113.99 src_port=3389 dst_ip=10.0.0.2 dst_port=3389 con_direction=inbound protocol=TCP user_name=
+
+Apr 15 10:05:06 sophosfw SFOS 19.5.1 MR-1: id=1106 log_type=IPS log_component=Intrusion log_subtype=Blocked fw_rule_id=1006 src_ip=172.16.5.10 src_port=40000 dst_ip=93.184.216.34 dst_port=8080 con_direction=outbound malware=Exploit.Kit detected=1 protocol=UDP
+
+Apr 15 10:06:07 sophosfw SFOS 19.5.1 MR-1: id=1107 log_type=WebFilter log_component=SSL log_subtype=DecryptionFailed fw_rule_id=1007 src_ip=192.168.10.9 src_port=55555 dst_ip=216.58.214.46 dst_port=443 url=https://google.com user_name=dave error=untrusted_cert
+
+Apr 15 10:07:08 sophosfw SFOS 19.5.1 MR-1: id=1108 log_type=Firewall log_component=PacketFilter log_subtype=Allow fw_rule_id=1008 src_ip=192.168.1.10 src_port=1234 dst_ip=8.8.8.8 dst_port=53 protocol=UDP src_zone=LAN dst_zone=WAN
+
+Apr 15 10:08:09 sophosfw SFOS 19.5.1 MR-1: id=1109 log_type=System log_component=HA log_subtype=NodeFailover state=active_to_passive device_name=Sophos-XG210 device_model=XG210 device_serial_id=C0101234ABCD
+
+Apr 15 10:09:10 sophosfw SFOS 19.5.1 MR-1: id=1110 log_type=Firewall log_component=IPS log_subtype=Signature fw_rule_id=1009 src_ip=10.1.1.5 src_port=2222 dst_ip=93.184.216.34 dst_port=22 protocol=TCP user_name=eve src_zone=LAN dst_zone=WAN src_country=Germany dst_country=China malware=Backdoor.Generic file_name=payload.zip file_path=/home/eve payload_size=87234
