@@ -26,6 +26,14 @@ OCSF_EVENT_CLASSES = {
     "custom_event": {"class_uid": 0, "category_uid": 0, "type_uid": 9999}
 }
 
+def parse_json_field(field):
+    if isinstance(field, str):
+        try:
+            return json.loads(field)
+        except:
+            return {}
+    return field or {}
+
 def load_logs(file_path):
     ext = os.path.splitext(file_path)[1].lower()
 
@@ -38,31 +46,37 @@ def load_logs(file_path):
             reader = csv.DictReader(f)
             return list(reader)
 
-    elif ext == ".sml":
+    elif ext in [".sml", ".xml"]:
         tree = ET.parse(file_path)
         root = tree.getroot()
         return [child.attrib for child in root]
 
     else:
-        raise ValueError("Unsupported file format. Use .json, .csv, or .sml")
+        raise ValueError("Unsupported file format. Use .json, .csv, or .xml")
 
 def determine_event_class(entry):
     if "httpRequest" in entry:
         return "network_activity"
     elif "protoPayload" in entry and "authenticationInfo" in json.dumps(entry["protoPayload"]):
         return "authentication"
-    elif "resource" in entry and entry["resource"].get("type", "").lower() in ["gce_instance", "iam_user"]:
+    elif "resource" in entry and parse_json_field(entry["resource"]).get("type", "").lower() in ["gce_instance", "iam_user"]:
         return "audit"
     else:
         return "custom_event"
 
 def normalize_logentry_to_ocsf(entry, event_class_override=None):
+    resource = parse_json_field(entry.get("resource"))
+    labels = parse_json_field(entry.get("labels"))
+    proto = parse_json_field(entry.get("protoPayload"))
+    json_payload = parse_json_field(entry.get("jsonPayload"))
+    http = parse_json_field(entry.get("httpRequest"))
+
     if "textPayload" in entry:
         message = entry["textPayload"]
-    elif "jsonPayload" in entry:
-        message = json.dumps(entry["jsonPayload"])
-    elif "protoPayload" in entry:
-        message = json.dumps(entry["protoPayload"])
+    elif json_payload:
+        message = json.dumps(json_payload)
+    elif proto:
+        message = json.dumps(proto)
     else:
         message = "No payload"
 
@@ -82,22 +96,37 @@ def normalize_logentry_to_ocsf(entry, event_class_override=None):
             "logName": entry.get("logName"),
             "insertId": entry.get("insertId"),
             "receiveTimestamp": entry.get("receiveTimestamp"),
-            "resource": entry.get("resource", {}),
-            "labels": entry.get("labels", {}),
+            "resource": resource,
+            "labels": labels,
             "trace": entry.get("trace"),
             "spanId": entry.get("spanId"),
-            "traceSampled": entry.get("traceSampled")
-        }
+            "traceSampled": entry.get("traceSampled"),
+            "sourceLocation": parse_json_field(entry.get("sourceLocation")),
+            "operation": parse_json_field(entry.get("operation")),
+            "httpRequest": http,
+            "protoPayload": proto,
+            "jsonPayload": json_payload,
+            "textPayload": entry.get("textPayload"),
+            "split": parse_json_field(entry.get("split")),
+            "severity": entry.get("severity"),
+            "timestamp": entry.get("timestamp"),
+            "receiveTimestamp": entry.get("receiveTimestamp"),
+            "resourceType": resource.get("type"),
+            "resourceLabels": resource.get("labels")
+        },
+        "raw_log": entry
     }
 
-    if "httpRequest" in entry:
-        normalized["http"] = entry["httpRequest"]
-    if "operation" in entry:
-        normalized["operation"] = entry["operation"]
-    if "sourceLocation" in entry:
-        normalized["source_location"] = entry["sourceLocation"]
-    if "split" in entry:
-        normalized["split_info"] = entry["split"]
+    if http:
+        normalized["http_method"] = http.get("requestMethod")
+        normalized["http_url"] = http.get("requestUrl")
+        normalized["http_status"] = http.get("status")
+        normalized["http_userAgent"] = http.get("userAgent")
+
+    if proto:
+        normalized["proto_serviceName"] = proto.get("serviceName")
+        normalized["proto_methodName"] = proto.get("methodName")
+        normalized["proto_auth"] = parse_json_field(proto.get("authenticationInfo")).get("principalEmail")
 
     return normalized
 
@@ -121,7 +150,7 @@ def convert_logs_to_ocsf(input_file):
 
 def main():
     parser = argparse.ArgumentParser(description="Convert GCP logs to OCSF schema.")
-    parser.add_argument("file", help="Path to input log file (.json, .csv, .sml)")
+    parser.add_argument("file", help="Path to input log file (.json, .csv, .xml)")
     args = parser.parse_args()
     convert_logs_to_ocsf(args.file)
 
